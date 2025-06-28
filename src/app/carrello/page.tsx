@@ -46,7 +46,9 @@ export default function CarrelloPage() {
 
   const totale = carrello.reduce((sum, p) => sum + p.prezzo * (p.kg || 1), 0);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
