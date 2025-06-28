@@ -11,6 +11,8 @@ interface Ordine {
   nomeCliente: string;
   dataConsegna: string;
   prodotti: any[];
+  telefono: string;
+  note?: string;
 }
 
 export default function CalendarioOrdini() {
