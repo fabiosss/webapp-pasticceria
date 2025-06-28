@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
 
 interface Prodotto {
   nome: string;
@@ -11,8 +10,6 @@ interface Prodotto {
   kg: number;
   preparazione: string;
   disponibilita: string;
-  immagine?: string;
-  unita: 'kg' | 'pz';
 }
 
 export default function Dashboard() {
@@ -24,8 +21,6 @@ export default function Dashboard() {
     kg: 1,
     preparazione: "",
     disponibilita: "",
-    unita: "kg", // valore predefinito
-    immagine: ""
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -36,38 +31,11 @@ export default function Dashboard() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      alert("Devi effettuare il login.");
-      return;
-    }
-
-    const { error } = await supabase
-      .from('prodotti')
-      .insert([{ ...formData, user_id: user.id }]);
-
-    if (error) {
-      console.error("❌ Errore Supabase:", error.message);
-      alert("Errore durante il salvataggio.");
-      return;
-    }
-
-    alert("✅ Prodotto salvato!");
-    setFormData({
-      nome: "",
-      descrizione: "",
-      prezzo: 0,
-      kg: 1,
-      preparazione: "",
-      disponibilita: "",
-      immagine: "",
-      unita: "kg",
-    });
+    setProdotti([...prodotti, formData]);
+    setFormData({ nome: "", descrizione: "", prezzo: 0, kg: 1, preparazione: "", disponibilita: "" });
   };
-
 
   const removeProduct = (index: number) => {
     const updated = [...prodotti];
@@ -96,25 +64,6 @@ export default function Dashboard() {
             <input name="preparazione" value={formData.preparazione} onChange={handleChange} placeholder="Tempo di preparazione" required className="px-4 py-2 border rounded-md" />
             <input name="disponibilita" value={formData.disponibilita} onChange={handleChange} placeholder="Disponibilità" required className="px-4 py-2 border rounded-md" />
             <textarea name="descrizione" value={formData.descrizione} onChange={handleChange} placeholder="Descrizione" required className="px-4 py-2 border rounded-md md:col-span-2" />
-            <select
-            name="unita"
-            value={formData.unita}
-            onChange={handleChange}
-            required
-            className="px-4 py-2 border rounded-md"
-          >
-            <option value="kg">Kg</option>
-            <option value="pz">Pezzi</option>
-          </select>
-
-          <input
-            name="immagine"
-            value={formData.immagine}
-            onChange={handleChange}
-            placeholder="Link immagine (opzionale)"
-            className="px-4 py-2 border rounded-md"
-          />
-
             <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center justify-center gap-2 md:col-span-2">
               <Plus size={18} /> Aggiungi Prodotto
             </button>

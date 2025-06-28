@@ -74,7 +74,8 @@ export default function DashboardPage() {
 
     const { error } = await supabase
       .from('prodotti')
-      .insert([{ ...formData, user_id: user.id }], { returning: 'minimal' });
+      .insert([{ ...formData, user_id: user.id }]);
+
 
     if (error) {
       console.error("❌ Errore Supabase durante insert:", error.message);
