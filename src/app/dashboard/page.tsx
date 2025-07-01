@@ -20,6 +20,9 @@ interface Prodotto {
 
 export default function DashboardPage() {
   const [prodotti, setProdotti] = useState<Prodotto[]>([]);
+  const [ordini, setOrdini] = useState<any[]>([]);
+  const [statistiche, setStatistiche] = useState<Record<string, number>>({});
+  const [calendario, setCalendario] = useState<Record<string, number>>({});
   const [formData, setFormData] = useState<Prodotto>({
     nome: '',
     descrizione: '',
@@ -40,9 +43,22 @@ export default function DashboardPage() {
         return;
       }
       await fetchProdotti(user.id);
+      await fetchOrdini();
     };
     checkAuthAndFetch();
   }, []);
+
+  useEffect(() => {
+    if (ordini.length > 0) {
+      calcolaStatistiche();
+    }
+  }, [ordini]);
+
+  useEffect(() => {
+    if (ordini.length > 0) {
+      calcolaCalendario();
+    }
+  }, [ordini]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -61,6 +77,41 @@ export default function DashboardPage() {
 
     if (!error && data) setProdotti(data);
   };
+
+  const fetchOrdini = async () => {
+    const { data, error } = await supabase
+      .from('ordini')
+      .select('*');
+
+    if (!error && data) setOrdini(data);
+  };
+
+  const calcolaStatistiche = () => {
+    const counter: Record<string, number> = {};
+
+    ordini.forEach((ordine) => {
+        ordine.prodotti.forEach((p: any) => {
+          const nome = p.nome;
+          const quantita = p.kg || 1;
+          counter[nome] = (counter[nome] || 0) + quantita;
+        });
+      });
+
+      setStatistiche(counter);
+  };
+
+  const calcolaCalendario = () => {
+    const mappa: Record<string, number> = {};
+
+    ordini.forEach((ordine) => {
+      const data = ordine.dataConsegna;
+      mappa[data] = (mappa[data] || 0) + 1;
+    });
+
+    setCalendario(mappa);
+  };
+
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,64 +165,101 @@ export default function DashboardPage() {
         <h1 className="title">👩‍🍳 Dashboard Pasticcere</h1>
 
         <div className="dashboard-box">
-          <h2>Aggiungi nuovo prodotto</h2>
-          <form onSubmit={handleSubmit} className="dashboard-form">
-            <input name="nome" value={formData.nome} onChange={handleChange}
-              placeholder="Esempio: Torta Millefoglie" required />
+          <div className="dashboard-box">
+            <h2>📋 Riepilogo Ordini</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+              <div className="bg-white shadow rounded p-4">
+                <p className="text-sm text-gray-500">Totali</p>
+                <p className="text-2xl font-bold text-pink-600">{ordini.length}</p>
+              </div>
+              <div className="bg-white shadow rounded p-4">
+                <p className="text-sm text-gray-500">Da Fare</p>
+                <p className="text-2xl font-bold text-orange-500">{ordini.filter(o => !o.completato).length}</p>
+              </div>
+              <div className="bg-white shadow rounded p-4">
+                <p className="text-sm text-gray-500">Completati</p>
+                <p className="text-2xl font-bold text-green-600">{ordini.filter(o => o.completato).length}</p>
+              </div>
+            </div>
+          </div>
 
-            <input
-              name="prezzo"
-              type="number"
-              value={formData.prezzo}
-              onChange={handleChange}
-              placeholder={`Prezzo al ${formData.unita === 'pz' ? 'pezzo' : 'kg'} (€)`}
-              required
-            />
+          <div className="dashboard-box">
+            <h2>📊 Prodotti più ordinati</h2>
+            {Object.keys(statistiche).length === 0 ? (
+              <p className="text-gray-500">Nessun dato disponibile.</p>
+            ) : (
+              <ul className="space-y-2">
+                {Object.entries(statistiche)
+                  .sort((a, b) => b[1] - a[1])
+                  .slice(0, 5)
+                  .map(([nome, quantita], i) => (
+                    <li key={i} className="flex justify-between bg-white rounded-md p-3 shadow">
+                      <span>{nome}</span>
+                      <span className="font-bold text-pink-700">{quantita}</span>
+                    </li>
+                  ))}
+              </ul>
+            )}
+          </div>
 
-            <select
-              name="unita"
-              value={formData.unita}
-              onChange={(e) => setFormData({ ...formData, unita: e.target.value as 'kg' | 'pz' })}
-              required
-            >
-              <option value="">Seleziona unità</option>
-              <option value="kg">Prezzo al kg</option>
-              <option value="pz">Prezzo a pezzo</option>
-            </select>
-            <input name="kg" type="number" value={formData.kg} onChange={handleChange}
-              placeholder="Quantità minima (es. 1)" required  />
+          <div className="dashboard-box">
+            <h2>📅 Calendario consegne</h2>
+            {Object.keys(calendario).length === 0 ? (
+              <p className="text-gray-500">Nessuna consegna pianificata.</p>
+            ) : (
+              <ul className="space-y-2">
+                {Object.entries(calendario)
+                  .sort(([a], [b]) => a.localeCompare(b))
+                  .map(([data, count], i) => (
+                    <li key={i} className="flex justify-between bg-white rounded-md p-3 shadow">
+                      <span>{new Date(data).toLocaleDateString('it-IT')}</span>
+                      <span className="text-pink-700 font-bold">{count} ordine{count > 1 ? 'i' : ''}</span>
+                    </li>
+                  ))}
+              </ul>
+            )}
+          </div>
 
-            <input name="preparazione" value={formData.preparazione} onChange={handleChange}
-              placeholder="Tempo di preparazione (es. 24h)" required  />
+          <div className="dashboard-box">
+            <h2>Aggiungi nuovo prodotto</h2>
+            <form onSubmit={handleSubmit} className="dashboard-form">
+              <input name="nome" value={formData.nome} onChange={handleChange}
+                placeholder="Esempio: Torta Millefoglie" required />
 
-            <input name="disponibilita" value={formData.disponibilita} onChange={handleChange}
-              placeholder="Disponibile (es. Sempre / Week-end)" required  />
+              <input name="prezzo" type="number" value={formData.prezzo} onChange={handleChange} placeholder={`Prezzo al ${formData.unita === 'pz' ? 'pezzo' : 'kg'} (€)`} required/>
+              <select name="unita" value={formData.unita} onChange={(e) => setFormData({ ...formData, unita: e.target.value as 'kg' | 'pz' })} required>
+                <option value="">Seleziona unità</option>
+                <option value="kg">Prezzo al kg</option>
+                <option value="pz">Prezzo a pezzo</option>
+              </select>
+              <input name="kg" type="number" value={formData.kg} onChange={handleChange} placeholder="Quantità minima (es. 1)" required  />
+              <input name="preparazione" value={formData.preparazione} onChange={handleChange} placeholder="Tempo di preparazione (es. 24h)" required  />
+              <input name="disponibilita" value={formData.disponibilita} onChange={handleChange} placeholder="Disponibile (es. Sempre / Week-end)" required  />
+              <textarea name="descrizione" value={formData.descrizione} onChange={handleChange} placeholder="Descrizione breve del dolce..." required  />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      const base64 = reader.result as string;
+                      setFormData((prev) => ({
+                        ...prev,
+                        immagine: base64,
+                      }));
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+              />
 
-            <textarea name="descrizione" value={formData.descrizione} onChange={handleChange}
-              placeholder="Descrizione breve del dolce..."
-              required  />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  const reader = new FileReader();
-                  reader.onloadend = () => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      immagine: reader.result as string,
-                    }));
-                  };
-                  reader.readAsDataURL(file);
-                }
-              }}
-              
-            />
-            <button type="submit" >
-              <Plus size={18} /> Aggiungi Prodotto
-            </button>
-          </form>
+              <button type="submit" >
+                <Plus size={18} /> Aggiungi Prodotto
+              </button>
+            </form>
+          </div>
         </div>
 
         

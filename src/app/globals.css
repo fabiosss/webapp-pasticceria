@@ -389,8 +389,8 @@ body {
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
 }
 
 .button.danger {
@@ -402,4 +402,91 @@ body {
 
 .button.danger:hover {
   background: #f5baba;
+}
+
+.ordini-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.ordini-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--colore-titolo, #432818);
+  margin-bottom: 0.5rem;
+}
+
+.ordini-header a {
+  font-size: 0.95rem;
+  color: var(--colore-accento);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.ordini-header a:hover {
+  text-decoration: underline;
+  color: var(--colore-primario);
+}
+
+.filtro-wrapper {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.button.filtro {
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 2px solid transparent;
+  background-color: var(--colore-accento);
+  color: var(--colore-testo);
+  transition: background 0.2s, color 0.2s;
+}
+
+.button.filtro:hover {
+  background-color: var(--colore-accento2);
+}
+
+.button.filtro.attivo {
+  background-color: var(--colore-primario);
+  color: white;
+  border-color: var(--colore-primario);
+}
+
+/* se usi Tailwind, puoi evitare duplicazioni, ma ecco le classi se no */
+.container-vetrina {
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 24px;
+}
+.card-vetrina {
+  background: white;
+  border-radius: var(--bordo);
+  box-shadow: var(--ombra);
+  overflow: hidden;
+}
+.card-vetrina img {
+  width: 100%;
+  height: auto;
+}
+.card-vetrina-content {
+  padding: 16px;
+}
+.button-acquista {
+  display: block;
+  width: 100%;
+  background: linear-gradient(to right, var(--colore-accento), var(--colore-accento2));
+  color: var(--colore-testo);
+  padding: 10px;
+  font-weight: bold;
+  border-radius: var(--bordo);
+  text-align: center;
+}
+.button-acquista:hover {
+  background: linear-gradient(to right, #e8b894, #db9f87);
 }

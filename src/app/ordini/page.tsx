@@ -87,12 +87,12 @@ export default function OrdiniPage() {
     <div className="min-h-screen bg-[#fdf9f6] p-6">
       <Header />
 
-      <div className="max-w-4xl mx-auto text-center mb-6">
-        <h1 className="text-3xl font-extrabold text-[#5A3B29] mb-2">📋 Ordini Ricevuti</h1>
-        <Link href="/dashboard" className="text-sm text-orange-700 hover:underline">← Torna alla Dashboard</Link>
+      <div className="ordini-header">
+        <a href="/dashboard">← Torna alla Dashboard</a>
+        <h1>📥 Ordini Ricevuti</h1>
       </div>
 
-      <div className="mb-8 flex flex-wrap justify-center gap-4">
+      <div className="flex justify-center items-center gap-4 mt-6 mb-8 flex-wrap">
         {(['tutti', 'daFare', 'completati'] as const).map((tipo) => {
           const attivo = filtro === tipo;
 
@@ -100,16 +100,18 @@ export default function OrdiniPage() {
             <button
               key={tipo}
               onClick={() => setFiltro(tipo)}
-              className={`px-4 py-2 text-sm font-semibold rounded-full shadow-md transition border ${
-                attivo
+              className={`px-5 py-2 rounded-full text-sm font-semibold transition shadow-sm border
+                ${attivo
                   ? 'bg-orange-200 text-orange-900 border-orange-400'
-                  : 'bg-white text-gray-700 border-gray-300'
-              }`}
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-orange-100'}
+              `}
             >
               {tipo === 'daFare' ? (
                 <span className="flex items-center gap-2">
                   Da fare
-                  <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{countDaFare}</span>
+                  <span className="bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
+                    {countDaFare}
+                  </span>
                 </span>
               ) : tipo === 'tutti' ? 'Tutti' : 'Completati'}
             </button>

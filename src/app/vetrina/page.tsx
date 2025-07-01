@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import Header from '@/components/Header';
 
 interface Prodotto {
   id: string;
@@ -51,34 +52,40 @@ export default function Vetrina() {
   };
 
   return (
-    <div className="container">
-      <h1 className="title">🍰 La Nostra Vetrina</h1>
-      <div className="grid">
-        {prodotti.map((p, i) => (
-          <div key={p.id || i} className="card">
-            {p.immagine && (
-              <img
-                src={p.immagine}
-                alt={`Foto di ${p.nome}`}
-                className="card-img"
-              />
-            )}
-            <div className="card-content">
-              <h2>{p.nome}</h2>
-              <p>{p.descrizione}</p>
-              <ul>
-                <li><strong>Prezzo:</strong> €{p.prezzo} / {p.unita}</li>
-                <li><strong>Minimo:</strong> {p.kg} {p.unita}</li>
-                <li><strong>Preparazione:</strong> {p.preparazione}</li>
-                <li><strong>Disponibilità:</strong> {p.disponibilita}</li>
-              </ul>
-              <button onClick={() => aggiungiACarrello(p)} className="button">
-                ➕ Aggiungi al carrello
-              </button>
+    <div className="min-h-screen bg-[#fdf9f6] p-6">
+      <Header />
+      <div className="dashboard-box">
+        <h1 className="title">🍰 La Nostra Vetrina</h1>
+
+        <div className="dashboard-grid">
+          {prodotti.map((p, i) => (
+            <div key={p.id} className="card">
+              {p.immagine && (
+                <img src={p.immagine} alt={p.nome} className="card-img" />
+              )}
+
+              <div className="card-content">
+                <h2>{p.nome}</h2>
+                <p>{p.descrizione}</p>
+                <ul>
+                  <li>💰 <strong>Prezzo:</strong> €{p.prezzo} / {p.unita}</li>
+                  <li>⚖️ <strong>Minimo:</strong> {p.kg} {p.unita}</li>
+                  <li>⏱️ <strong>Preparazione:</strong> {p.preparazione}</li>
+                  <li>📅 <strong>Disponibilità:</strong> {p.disponibilita}</li>
+                </ul>
+                <button
+                  onClick={() => aggiungiACarrello(p)}
+                  className="button"
+                >
+                  ➕ Aggiungi al carrello
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
+
     </div>
   );
+
 }

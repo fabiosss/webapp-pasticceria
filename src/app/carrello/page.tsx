@@ -44,7 +44,7 @@ export default function CarrelloPage() {
     localStorage.setItem('carrello', JSON.stringify(nuovo));
   };
 
-  const totale = carrello.reduce((sum, p) => sum + p.prezzo * (p.kg || 1), 0);
+  const totale = carrello.reduce((sum, p) => sum + p.prezzo * (p.quantita || 1), 0);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -87,7 +87,6 @@ export default function CarrelloPage() {
   };
 
 
-
   return (
     <div className="carrello-container">
       <h1 className="carrello-titolo">🛒 Il tuo carrello</h1>
@@ -104,7 +103,7 @@ export default function CarrelloPage() {
         <>
           <ul className="carrello-lista space-y-4 mb-6">
             {carrello.map((item, i) => (
-              <li key={i} className="bg-white p-4 rounded shadow flex justify-between items-center gap-4">
+              <li key={i} className="bg-white p-4 rounded shadow flex items-center gap-4">
                 {item.immagine && (
                   <img
                     src={item.immagine}
@@ -114,15 +113,69 @@ export default function CarrelloPage() {
                 )}
                 <div className="flex-1">
                   <p className="font-semibold">{item.nome}</p>
-                  <p className="text-sm text-gray-600">
-                    {item.kg} {item.unita === 'pz' ? 'pezzi' : 'kg'} – €{item.prezzo}/{item.unita}
+                  <p className="text-sm text-gray-600 mb-1">
+                    €{item.prezzo} / {item.unita}
                   </p>
+                  <div className="flex items-center gap-2">
+  <button
+    onClick={() => {
+      const nuovo = [...carrello];
+      const attuale = nuovo[i].quantita || 1;
+      nuovo[i].quantita = Math.max(attuale - 1, 1);
+      setCarrello(nuovo);
+      setForm((prev) => ({ ...prev, prodotti: nuovo }));
+      localStorage.setItem('carrello', JSON.stringify(nuovo));
+    }}
+    className="px-2 py-1 bg-gray-200 rounded text-sm font-bold"
+  >
+    −
+  </button>
+
+  <input
+    type="number"
+    min={1}
+    step={1}
+    value={item.quantita || 1}
+    onChange={(e) => {
+      const nuovo = [...carrello];
+      nuovo[i] = {
+        ...item,
+        quantita: parseInt(e.target.value, 10) || 1,
+      };
+      setCarrello(nuovo);
+      setForm((prev) => ({ ...prev, prodotti: nuovo }));
+      localStorage.setItem('carrello', JSON.stringify(nuovo));
+    }}
+    className="border rounded px-2 py-1 text-sm w-16 text-center"
+  />
+
+  <button
+    onClick={() => {
+      const nuovo = [...carrello];
+      const attuale = nuovo[i].quantita || 1;
+      nuovo[i].quantita = attuale + 1;
+      setCarrello(nuovo);
+      setForm((prev) => ({ ...prev, prodotti: nuovo }));
+      localStorage.setItem('carrello', JSON.stringify(nuovo));
+    }}
+    className="px-2 py-1 bg-gray-200 rounded text-sm font-bold"
+  >
+    +
+  </button>
+</div>
+
+
+                  <span className="text-xs text-gray-500 ml-2">{item.unita}</span>
+                </div>
+                <div className="font-bold text-green-600 w-20 text-right">
+                  €{(item.prezzo * (item.quantita || item.kg || 1)).toFixed(2)}
                 </div>
                 <button onClick={() => rimuovi(i)} className="text-red-600 hover:text-red-800">
                   <Trash2 size={20} />
                 </button>
               </li>
             ))}
+
           </ul>
 
           <div className="flex justify-between items-center mb-6">
